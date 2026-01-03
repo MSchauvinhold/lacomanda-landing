@@ -2,6 +2,7 @@ import { useReducer, useState } from 'react';
 import Header from './components/Header';
 import ProductCard from './components/ProductCard';
 import OrderModal from './components/OrderModal';
+import Footer from './components/Footer';
 import { products } from './data/products';
 import { CartState, CartAction, Product, CustomerData } from './types';
 
@@ -36,6 +37,8 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 
 // Función para verificar si está en horario de pedidos
 const isOrderingTime = (): boolean => {
+  // Código comentado temporalmente para desarrollo
+  
   const now = new Date();
   const day = now.getDay(); // 0 = domingo, 1 = lunes, ..., 6 = sábado
   const hour = now.getHours();
@@ -47,15 +50,20 @@ const isOrderingTime = (): boolean => {
   
   // 20:30 a 23:50
   const startTime = 20 * 60 + 30; // 20:30 en minutos
-  const endTime = 23 * 60 + 49;   // 23:49 en minutos
+  const endTime = 23 * 60 + 50;   // 23:50 en minutos
   const isValidTime = currentTime >= startTime && currentTime <= endTime;
   
   return isValidDay && isValidTime;
+  
+  
+  return true; // Temporalmente habilitado para desarrollo
 };
 
 function App() {
   const [cartState, dispatch] = useReducer(cartReducer, { items: [] });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const isOrderingEnabled = isOrderingTime();
 
   const addToCart = (product: Product) => {
@@ -168,9 +176,6 @@ function App() {
               ⏰ Jueves a Domingos - 20:30 a 23:50
             </p>
             <p className="text-gray-300">
-              ☎️ 3772406996
-            </p>
-            <p className="text-gray-300">
               🏠 Belgrano 1215
             </p>
             <p className="text-naranja-calido font-semibold">
@@ -192,6 +197,11 @@ function App() {
           </div>
         </div>
       </main>
+      
+      <Footer 
+        onShowPrivacyPolicy={() => setShowPrivacyPolicy(true)}
+        onShowTerms={() => setShowTerms(true)}
+      />
       
       {/* Carrito Flotante */}
       {cartState.items.length > 0 && (
@@ -231,6 +241,64 @@ function App() {
         onUpdateObservations={updateObservations}
         total={calculateTotal()}
       />
+      
+      {/* Modal Política de Privacidad */}
+      {showPrivacyPolicy && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+          <div className="bg-marron-oscuro rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-rojo-intenso">Política de Privacidad</h2>
+                <button onClick={() => setShowPrivacyPolicy(false)} className="text-gray-400 hover:text-white text-2xl">
+                  ✕
+                </button>
+              </div>
+              <div className="text-white text-sm space-y-4">
+                <p>En La Comanda valoramos tu privacidad y nos comprometemos a proteger los datos personales que nos brindás al realizar un pedido a través de nuestro sitio web.</p>
+                <h3 className="text-naranja-calido font-semibold">Datos que recopilamos</h3>
+                <p>Al realizar un pedido, solicitamos:</p>
+                <ul className="list-disc list-inside ml-4 space-y-1">
+                  <li>Nombre y apellido</li>
+                  <li>Teléfono de contacto</li>
+                  <li>Dirección</li>
+                  <li>Información del pedido (productos, observaciones, tipo de entrega y método de pago)</li>
+                </ul>
+                <h3 className="text-naranja-calido font-semibold">Uso de la información</h3>
+                <p>Los datos se utilizan exclusivamente para armar y gestionar tu pedido, y para contactarte por WhatsApp con el fin de confirmar o coordinar la entrega.</p>
+                <h3 className="text-naranja-calido font-semibold">Almacenamiento y uso de datos</h3>
+                <p>Este sitio no almacena ni guarda los datos personales ingresados. La información se envía directamente al WhatsApp del comercio y no se comparte con terceros.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Modal Términos y Condiciones */}
+      {showTerms && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+          <div className="bg-marron-oscuro rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-rojo-intenso">Términos y Condiciones</h2>
+                <button onClick={() => setShowTerms(false)} className="text-gray-400 hover:text-white text-2xl">
+                  ✕
+                </button>
+              </div>
+              <div className="text-white text-sm space-y-4">
+                <p>El uso de este sitio web implica la aceptación de los siguientes términos y condiciones:</p>
+                <h3 className="text-naranja-calido font-semibold">1. Función del sitio</h3>
+                <p>Este sitio facilita el armado de pedidos que serán confirmados exclusivamente a través de WhatsApp. El envío del pedido no garantiza su aceptación automática por parte del comercio.</p>
+                <h3 className="text-naranja-calido font-semibold">2. Confirmación de pedidos</h3>
+                <p>Todos los pedidos deben ser confirmados por el local vía WhatsApp. El comercio se reserva el derecho de rechazar pedidos fuera de horario, por falta de stock o por información incompleta.</p>
+                <h3 className="text-naranja-calido font-semibold">3. Horarios de atención</h3>
+                <p>Los pedidos solo se reciben dentro de los horarios informados: jueves a domingos de 20:30 a 23:50.</p>
+                <h3 className="text-naranja-calido font-semibold">4. Precios y tiempos</h3>
+                <p>Los precios publicados pueden estar sujetos a modificaciones sin previo aviso. Los tiempos de preparación y entrega son estimados y pueden variar según la demanda.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );
