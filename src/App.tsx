@@ -37,7 +37,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 
 // Función para verificar si está en horario de pedidos
 const isOrderingTime = (): boolean => {
-  /*
+  
   // Código comentado temporalmente para desarrollo
   
   const now = new Date();
@@ -56,7 +56,7 @@ const isOrderingTime = (): boolean => {
   
   return isValidDay && isValidTime;
   
-  */
+  
   return true; // Temporalmente habilitado para desarrollo
 };
 
