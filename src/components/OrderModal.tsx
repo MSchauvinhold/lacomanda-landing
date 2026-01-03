@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CartItem, CustomerData } from '../types';
 
 interface OrderModalProps {
@@ -9,9 +9,11 @@ interface OrderModalProps {
   onRemoveItem: (index: number) => void;
   onUpdateObservations: (index: number, observations: string) => void;
   total: number;
+  calculateTotal: (orderType?: string, neighborhood?: string) => number;
+  calculateDeliveryFee: (orderType: string, neighborhood?: string) => number;
 }
 
-const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, cartItems, onSendWhatsApp, onRemoveItem, onUpdateObservations, total }) => {
+const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, cartItems, onSendWhatsApp, onRemoveItem, onUpdateObservations, calculateTotal, calculateDeliveryFee }) => {
   const [customerData, setCustomerData] = useState<CustomerData>({
     name: '',
     phone: '',
@@ -29,6 +31,13 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, cartItems, onS
 
   const [editingObservations, setEditingObservations] = useState<number | null>(null);
   const [tempObservations, setTempObservations] = useState('');
+  const [currentTotal, setCurrentTotal] = useState(0);
+
+  // Actualizar total cuando cambie el tipo de pedido o barrio
+  useEffect(() => {
+    const newTotal = calculateTotal(customerData.orderType, address.neighborhood);
+    setCurrentTotal(newTotal);
+  }, [customerData.orderType, address.neighborhood, cartItems, calculateTotal]);
 
   if (!isOpen) return null;
 
@@ -133,8 +142,25 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, cartItems, onS
               ))}
             </div>
             
-            <div className="bg-rojo-intenso rounded p-3 text-center">
-              <p className="text-white font-bold text-lg">Total: ${total.toLocaleString()}</p>
+            <div className="bg-rojo-intenso rounded p-3">
+              <div className="text-white text-center space-y-1">
+                {customerData.orderType === 'delivery' && (
+                  <div className="flex justify-between text-sm">
+                    <span>Subtotal:</span>
+                    <span>${cartItems.reduce((sum, item) => sum + item.product.price, 0).toLocaleString()}</span>
+                  </div>
+                )}
+                {customerData.orderType === 'delivery' && (
+                  <div className="flex justify-between text-sm">
+                    <span>Envío {address.neighborhood ? '(barrio)' : '(centro)'}:</span>
+                    <span>${calculateDeliveryFee(customerData.orderType, address.neighborhood).toLocaleString()}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-lg border-t border-red-400 pt-1">
+                  <span>Total:</span>
+                  <span>${currentTotal.toLocaleString()}</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -240,7 +266,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, cartItems, onS
                 </div>
 
                 <div>
-                  <label className="block text-white text-sm mb-1">Entre calles</label>
+                  <label className="block text-white text-sm mb-1">Entre calles (opcional)</label>
                   <input
                     type="text"
                     value={address.between}

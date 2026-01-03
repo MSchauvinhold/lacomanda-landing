@@ -37,6 +37,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 
 // Función para verificar si está en horario de pedidos
 const isOrderingTime = (): boolean => {
+  /*
   // Código comentado temporalmente para desarrollo
   
   const now = new Date();
@@ -55,7 +56,7 @@ const isOrderingTime = (): boolean => {
   
   return isValidDay && isValidTime;
   
-  
+  */
   return true; // Temporalmente habilitado para desarrollo
 };
 
@@ -78,8 +79,15 @@ function App() {
     dispatch({ type: 'UPDATE_OBSERVATIONS', payload: { index, observations } });
   };
 
-  const calculateTotal = (): number => {
-    return cartState.items.reduce((total, item) => total + item.product.price, 0);
+  const calculateDeliveryFee = (orderType: string, neighborhood?: string): number => {
+    if (orderType !== 'delivery') return 0;
+    return neighborhood && neighborhood.trim() ? 3000 : 2000;
+  };
+
+  const calculateTotal = (orderType: string = 'pickup', neighborhood?: string): number => {
+    const subtotal = cartState.items.reduce((total, item) => total + item.product.price, 0);
+    const deliveryFee = calculateDeliveryFee(orderType, neighborhood);
+    return subtotal + deliveryFee;
   };
 
   const generateWhatsAppMessage = (customerData: CustomerData): string => {
@@ -114,8 +122,14 @@ function App() {
       message += ` ($${item.product.price.toLocaleString()})\n`;
     });
     
+    // Costo de envío
+    const deliveryFee = calculateDeliveryFee(customerData.orderType, customerData.address?.neighborhood);
+    if (deliveryFee > 0) {
+      message += `\nEnvio: $${deliveryFee.toLocaleString()}\n`;
+    }
+    
     // Total
-    const total = calculateTotal();
+    const total = calculateTotal(customerData.orderType, customerData.address?.neighborhood);
     message += `\n*Total: $${total.toLocaleString()}*\n`;
     
     // Observaciones generales
@@ -240,6 +254,8 @@ function App() {
         onRemoveItem={removeFromCart}
         onUpdateObservations={updateObservations}
         total={calculateTotal()}
+        calculateTotal={calculateTotal}
+        calculateDeliveryFee={calculateDeliveryFee}
       />
       
       {/* Modal Política de Privacidad */}
