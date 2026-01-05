@@ -1,6 +1,10 @@
 import React from 'react';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onAdminClick: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onAdminClick }) => {
   return (
     <header className="bg-marron-oscuro bg-opacity-80 text-white py-6 px-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -20,7 +24,12 @@ const Header: React.FC = () => {
             Agregá productos al carrito y hacé tu pedido por WhatsApp
           </p>
         </div>
-        <div className="w-20"></div>
+        <button
+          onClick={onAdminClick}
+          className="w-8 h-8 text-gray-500 hover:text-white transition-colors"
+        >
+          ⚙️
+        </button>
       </div>
     </header>
   );

@@ -1,7 +1,9 @@
-import { useReducer, useState } from 'react';
+import { useReducer, useState, useEffect } from 'react';
 import Header from './components/Header';
 import ProductCard from './components/ProductCard';
 import OrderModal from './components/OrderModal';
+import AdminModal from './components/AdminModal';
+import AdminPanel from './components/AdminPanel';
 import Footer from './components/Footer';
 import { products } from './data/products';
 import { CartState, CartAction, Product, CustomerData } from './types';
@@ -89,7 +91,38 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
-  const isOrderingEnabled = isOrderingTime();
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [adminToken, setAdminToken] = useState('');
+  const [adminOrderingEnabled, setAdminOrderingEnabled] = useState(true);
+  
+  const isOrderingEnabled = isOrderingTime() && adminOrderingEnabled;
+
+  // Cargar estado admin al iniciar
+  useEffect(() => {
+    fetchAdminStatus();
+  }, []);
+
+  const fetchAdminStatus = async () => {
+    try {
+      const response = await fetch('/api/admin-status');
+      if (response.ok) {
+        const data = await response.json();
+        setAdminOrderingEnabled(data.orderingEnabled);
+      }
+    } catch (err) {
+      console.error('Error fetching admin status:', err);
+    }
+  };
+
+  const handleAdminLogin = (token: string) => {
+    setAdminToken(token);
+    setShowAdminPanel(true);
+  };
+
+  const handleAdminStatusChange = (enabled: boolean) => {
+    setAdminOrderingEnabled(enabled);
+  };
 
   const addToCart = (product: Product) => {
     dispatch({ type: 'ADD_ITEM', payload: { product, observations: '' } });
@@ -180,7 +213,7 @@ function App() {
     <div className="min-h-screen bg-bordo-oscuro relative" style={{backgroundImage: 'url(/LogoMenu.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed'}}>
       <div className="absolute inset-0 bg-bordo-oscuro bg-opacity-60"></div>
       <div className="relative z-10">
-        <Header />
+        <Header onAdminClick={() => setShowAdminModal(true)} />
       
       <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-6">
         {/* Productos - Grid Responsivo */}
@@ -251,7 +284,7 @@ function App() {
       )}
       
       {/* Overlay de cerrado */}
-      {false && !isOrderingEnabled && (
+      {!isOrderingEnabled && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
           <div className="text-center text-white p-8">
             <h2 className="text-4xl font-bold text-rojo-intenso mb-4">Estamos cerrados</h2>
@@ -272,6 +305,20 @@ function App() {
         total={calculateTotal()}
         calculateTotal={calculateTotal}
         calculateDeliveryFee={calculateDeliveryFee}
+      />
+      
+      {/* Modales de Admin */}
+      <AdminModal
+        isOpen={showAdminModal}
+        onClose={() => setShowAdminModal(false)}
+        onLogin={handleAdminLogin}
+      />
+      
+      <AdminPanel
+        isOpen={showAdminPanel}
+        onClose={() => setShowAdminPanel(false)}
+        token={adminToken}
+        onStatusChange={handleAdminStatusChange}
       />
       
       {/* Modal Política de Privacidad */}
