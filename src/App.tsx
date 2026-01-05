@@ -64,10 +64,6 @@ const getStatusMessage = (): string => {
 
 // Función para verificar si está en horario de pedidos
 const isOrderingTime = (): boolean => {
-  // Temporalmente habilitado para testing
-  return true;
-  
-  /*
   const now = new Date();
   const day = now.getDay(); // 0 = domingo, 1 = lunes, ..., 6 = sábado
   const hour = now.getHours();
@@ -83,7 +79,6 @@ const isOrderingTime = (): boolean => {
   const isValidTime = currentTime >= startTime && currentTime <= endTime;
   
   return isValidDay && isValidTime;
-  */
 };
 
 function App() {
