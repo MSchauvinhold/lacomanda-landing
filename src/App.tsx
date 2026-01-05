@@ -35,8 +35,37 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
   }
 };
 
+// Función para generar mensaje dinámico de estado
+const getStatusMessage = (): string => {
+  const now = new Date();
+  const day = now.getDay();
+  const hour = now.getHours();
+  const minute = now.getMinutes();
+  const currentTime = hour * 60 + minute;
+  
+  const isValidDay = day === 0 || day === 4 || day === 5 || day === 6;
+  const startTime = 20 * 60 + 30; // 20:30
+  const endTime = 23 * 60 + 50;   // 23:50
+  
+  if (isValidDay) {
+    if (currentTime < startTime) {
+      return "Todavía estamos cerrados. Volvemos hoy a partir de las 20:30.";
+    } else if (currentTime > endTime) {
+      return "Ya cerramos por hoy. Volvemos mañana a partir de las 20:30.";
+    }
+  } else {
+    return "Estamos cerrados. Volvemos el jueves a partir de las 20:30.";
+  }
+  
+  return ""; // Abierto
+};
+
 // Función para verificar si está en horario de pedidos
 const isOrderingTime = (): boolean => {
+  // Temporalmente habilitado para testing
+  return true;
+  
+  /*
   const now = new Date();
   const day = now.getDay(); // 0 = domingo, 1 = lunes, ..., 6 = sábado
   const hour = now.getHours();
@@ -52,6 +81,7 @@ const isOrderingTime = (): boolean => {
   const isValidTime = currentTime >= startTime && currentTime <= endTime;
   
   return isValidDay && isValidTime;
+  */
 };
 
 function App() {
@@ -147,22 +177,14 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-bordo-oscuro relative" style={{backgroundImage: 'url(/LogoMenu.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed'}}>
-      <div className="absolute inset-0 bg-bordo-oscuro bg-opacity-70"></div>
+    <div className="min-h-screen bg-bordo-oscuro relative" style={{backgroundImage: 'url(/LogoMenu.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed'}}>
+      <div className="absolute inset-0 bg-bordo-oscuro bg-opacity-60"></div>
       <div className="relative z-10">
         <Header />
       
-      <main className="max-w-7xl mx-auto px-4 lg:px-8 py-6">
-        {/* Mensaje de horarios */}
-        {!isOrderingEnabled && (
-          <div className="bg-rojo-intenso text-white p-4 rounded-lg mb-6 text-center">
-            <p className="font-semibold">Los pedidos están disponibles</p>
-            <p>de jueves a domingo de 20:30 a 23:50</p>
-          </div>
-        )}
-        
+      <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-6">
         {/* Productos - Grid Responsivo */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 lg:gap-6 xl:gap-8">
           {products.map((product) => (
             <ProductCard
               key={product.id}
@@ -174,7 +196,7 @@ function App() {
         </div>
         
         {/* Información del local */}
-        <div className="mt-12 max-w-md mx-auto bg-marron-oscuro bg-opacity-95 rounded-lg p-6 text-center">
+        <div className="mt-8 sm:mt-12 max-w-md mx-auto bg-marron-oscuro bg-opacity-95 rounded-lg p-4 sm:p-6 text-center">
           <h3 className="text-white font-bold mb-4 text-xl">La Comanda</h3>
           <div className="space-y-2 text-sm">
             <p className="text-naranja-calido font-semibold">
@@ -215,13 +237,13 @@ function App() {
       {cartState.items.length > 0 && (
         <button
           onClick={() => setIsModalOpen(true)}
-          className="fixed bottom-6 right-6 bg-rojo-intenso hover:bg-red-700 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 z-40"
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 bg-rojo-intenso hover:bg-red-700 text-white rounded-full w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 z-40"
         >
           <div className="relative">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5 6m0 0h9M17 21a2 2 0 100-4 2 2 0 000 4zM9 21a2 2 0 100-4 2 2 0 000 4z" />
             </svg>
-            <span className="absolute -top-2 -right-2 bg-naranja-calido text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+            <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-naranja-calido text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center font-bold">
               {cartState.items.length}
             </span>
           </div>
@@ -229,11 +251,11 @@ function App() {
       )}
       
       {/* Overlay de cerrado */}
-      {!isOrderingEnabled && (
+      {false && !isOrderingEnabled && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
           <div className="text-center text-white p-8">
             <h2 className="text-4xl font-bold text-rojo-intenso mb-4">Estamos cerrados</h2>
-            <p className="text-xl mb-2">Vuelve el jueves a partir de las 20:30</p>
+            <p className="text-xl mb-2">{getStatusMessage()}</p>
             <p className="text-lg text-gray-300">Horarios: Jueves a Domingos - 20:30 a 23:50</p>
           </div>
         </div>
