@@ -8,7 +8,7 @@ import Footer from './components/Footer';
 import { products } from './data/products';
 import { CartState, CartAction, Product, CustomerData } from './types';
 
-// Reducer para manejar el carrito
+// Carrito
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case 'ADD_ITEM':
@@ -37,7 +37,6 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
   }
 };
 
-// Función para generar mensaje dinámico de estado
 const getStatusMessage = (): string => {
   const now = new Date();
   const day = now.getDay();
@@ -46,8 +45,8 @@ const getStatusMessage = (): string => {
   const currentTime = hour * 60 + minute;
   
   const isValidDay = day === 0 || day === 4 || day === 5 || day === 6;
-  const startTime = 20 * 60 + 30; // 20:30
-  const endTime = 23 * 60 + 50;   // 23:50
+  const startTime = 20 * 60 + 30;
+  const endTime = 23 * 60 + 50;
   
   if (isValidDay) {
     if (currentTime < startTime) {
@@ -59,23 +58,19 @@ const getStatusMessage = (): string => {
     return "Estamos cerrados. Volvemos el jueves a partir de las 20:30.";
   }
   
-  return ""; // Abierto
+  return "";
 };
 
-// Función para verificar si está en horario de pedidos
 const isOrderingTime = (): boolean => {
   const now = new Date();
-  const day = now.getDay(); // 0 = domingo, 1 = lunes, ..., 6 = sábado
+  const day = now.getDay();
   const hour = now.getHours();
   const minute = now.getMinutes();
-  const currentTime = hour * 60 + minute; // minutos desde medianoche
+  const currentTime = hour * 60 + minute;
   
-  // Jueves (4) a domingo (0) - considerando que domingo es 0
   const isValidDay = day === 0 || day === 4 || day === 5 || day === 6;
-  
-  // 20:30 a 23:50
-  const startTime = 20 * 60 + 30; // 20:30 en minutos
-  const endTime = 23 * 60 + 50;   // 23:50 en minutos
+  const startTime = 20 * 60 + 30;
+  const endTime = 23 * 60 + 50;
   const isValidTime = currentTime >= startTime && currentTime <= endTime;
   
   return isValidDay && isValidTime;
@@ -89,11 +84,10 @@ function App() {
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [adminToken, setAdminToken] = useState('');
-  const [adminOrderingEnabled, setAdminOrderingEnabled] = useState(true);
+  const [adminEnabled, setAdminEnabled] = useState(true);
   
-  const isOrderingEnabled = isOrderingTime() && adminOrderingEnabled;
+  const canOrder = isOrderingTime() && adminEnabled;
 
-  // Cargar estado admin al iniciar
   useEffect(() => {
     fetchAdminStatus();
   }, []);
@@ -103,7 +97,7 @@ function App() {
       const response = await fetch('/api/admin-status');
       if (response.ok) {
         const data = await response.json();
-        setAdminOrderingEnabled(data.orderingEnabled);
+        setAdminEnabled(data.orderingEnabled);
       }
     } catch (err) {
       console.error('Error fetching admin status:', err);
@@ -116,7 +110,7 @@ function App() {
   };
 
   const handleAdminStatusChange = (enabled: boolean) => {
-    setAdminOrderingEnabled(enabled);
+    setAdminEnabled(enabled);
   };
 
   const addToCart = (product: Product) => {
@@ -131,27 +125,25 @@ function App() {
     dispatch({ type: 'UPDATE_OBSERVATIONS', payload: { index, observations } });
   };
 
-  const calculateDeliveryFee = (orderType: string, neighborhood?: string): number => {
+  const getDeliveryFee = (orderType: string, neighborhood?: string): number => {
     if (orderType !== 'delivery') return 0;
     return neighborhood && neighborhood.trim() ? 3000 : 2000;
   };
 
-  const calculateTotal = (orderType: string = 'pickup', neighborhood?: string): number => {
+  const getTotal = (orderType: string = 'pickup', neighborhood?: string): number => {
     const subtotal = cartState.items.reduce((total, item) => total + item.product.price, 0);
-    const deliveryFee = calculateDeliveryFee(orderType, neighborhood);
+    const deliveryFee = getDeliveryFee(orderType, neighborhood);
     return subtotal + deliveryFee;
   };
 
-  const generateWhatsAppMessage = (customerData: CustomerData): string => {
+  const buildWhatsAppMessage = (customerData: CustomerData): string => {
     let message = `*NUEVO PEDIDO - LA COMANDA*\n\n`;
     
-    // Datos del cliente
     message += `*Cliente:* ${customerData.name}\n`;
     message += `*Telefono:* ${customerData.phone}\n`;
     message += `*Pago:* ${customerData.paymentMethod}\n`;
     message += `*Tipo:* ${customerData.orderType === 'pickup' ? 'Retiro en local' : 'Envio a domicilio'}\n\n`;
     
-    // Dirección si es delivery
     if (customerData.orderType === 'delivery' && customerData.address) {
       message += `*Direccion:*\n`;
       message += `${customerData.address.street} ${customerData.address.number}\n`;
@@ -164,7 +156,6 @@ function App() {
       message += `\n`;
     }
     
-    // Productos
     message += `*PEDIDO:*\n`;
     cartState.items.forEach((item, index) => {
       message += `${index + 1}. ${item.product.name}`;
@@ -174,17 +165,14 @@ function App() {
       message += ` ($${item.product.price.toLocaleString()})\n`;
     });
     
-    // Costo de envío
-    const deliveryFee = calculateDeliveryFee(customerData.orderType, customerData.address?.neighborhood);
+    const deliveryFee = getDeliveryFee(customerData.orderType, customerData.address?.neighborhood);
     if (deliveryFee > 0) {
       message += `\nEnvio: $${deliveryFee.toLocaleString()}\n`;
     }
     
-    // Total
-    const total = calculateTotal(customerData.orderType, customerData.address?.neighborhood);
+    const total = getTotal(customerData.orderType, customerData.address?.neighborhood);
     message += `\n*Total: $${total.toLocaleString()}*\n`;
     
-    // Observaciones generales
     if (customerData.generalObservations) {
       message += `\n*Observaciones:* ${customerData.generalObservations}`;
     }
@@ -193,13 +181,12 @@ function App() {
   };
 
   const sendToWhatsApp = (customerData: CustomerData) => {
-    const message = generateWhatsAppMessage(customerData);
-    const whatsappNumber = '5493772406996'; // Número de WhatsApp
+    const message = buildWhatsAppMessage(customerData);
+    const whatsappNumber = '5493772406996';
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
     
     window.open(whatsappUrl, '_blank');
     
-    // Limpiar carrito y cerrar modal
     dispatch({ type: 'CLEAR_CART' });
     setIsModalOpen(false);
   };
@@ -218,7 +205,7 @@ function App() {
               key={product.id}
               product={product}
               onAddToCart={addToCart}
-              isOrderingEnabled={isOrderingEnabled}
+              isOrderingEnabled={canOrder}
             />
           ))}
         </div>
@@ -279,7 +266,7 @@ function App() {
       )}
       
       {/* Overlay de cerrado */}
-      {!isOrderingEnabled && (
+      {!canOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
           <div className="text-center text-white p-8">
             <h2 className="text-4xl font-bold text-rojo-intenso mb-4">Estamos cerrados</h2>
@@ -297,9 +284,9 @@ function App() {
         onSendWhatsApp={sendToWhatsApp}
         onRemoveItem={removeFromCart}
         onUpdateObservations={updateObservations}
-        total={calculateTotal()}
-        calculateTotal={calculateTotal}
-        calculateDeliveryFee={calculateDeliveryFee}
+        total={getTotal()}
+        calculateTotal={getTotal}
+        calculateDeliveryFee={getDeliveryFee}
       />
       
       {/* Modales de Admin */}
