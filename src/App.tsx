@@ -62,6 +62,10 @@ const getStatusMessage = (): string => {
 };
 
 const isOrderingTime = (): boolean => {
+  // Temporalmente habilitado para demo
+  return true;
+  
+  /*
   const now = new Date();
   const day = now.getDay();
   const hour = now.getHours();
@@ -74,6 +78,7 @@ const isOrderingTime = (): boolean => {
   const isValidTime = currentTime >= startTime && currentTime <= endTime;
   
   return isValidDay && isValidTime;
+  */
 };
 
 function App() {
