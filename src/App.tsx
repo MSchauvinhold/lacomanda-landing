@@ -90,6 +90,13 @@ function App() {
 
   useEffect(() => {
     fetchAdminStatus();
+    
+    // Polling cada 10 segundos
+    const interval = setInterval(() => {
+      fetchAdminStatus();
+    }, 10000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const fetchAdminStatus = async () => {
