@@ -38,34 +38,10 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 };
 
 const getStatusMessage = (): string => {
-  const now = new Date();
-  const day = now.getDay();
-  const hour = now.getHours();
-  const minute = now.getMinutes();
-  const currentTime = hour * 60 + minute;
-  
-  const isValidDay = day === 0 || day === 4 || day === 5 || day === 6;
-  const startTime = 20 * 60 + 30;
-  const endTime = 23 * 60 + 50;
-  
-  if (isValidDay) {
-    if (currentTime < startTime) {
-      return "Todavía estamos cerrados. Volvemos hoy a partir de las 20:30.";
-    } else if (currentTime > endTime) {
-      return "Ya cerramos por hoy. Volvemos mañana a partir de las 20:30.";
-    }
-  } else {
-    return "Estamos cerrados. Volvemos el jueves a partir de las 20:30.";
-  }
-  
-  return "";
+  return "Estamos cerrados temporalmente. Volvemos pronto.";
 };
 
 const isOrderingTime = (): boolean => {
-  // Temporalmente habilitado para demo
-  return true;
-  
-  /*
   const now = new Date();
   const day = now.getDay();
   const hour = now.getHours();
@@ -78,7 +54,6 @@ const isOrderingTime = (): boolean => {
   const isValidTime = currentTime >= startTime && currentTime <= endTime;
   
   return isValidDay && isValidTime;
-  */
 };
 
 function App() {
@@ -90,8 +65,13 @@ function App() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [adminToken, setAdminToken] = useState('');
   const [adminEnabled, setAdminEnabled] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   
-  const canOrder = isOrderingTime() && adminEnabled;
+  const canOrder = adminEnabled;
+  
+  console.log('Debug - isOrderingTime():', isOrderingTime());
+  console.log('Debug - adminEnabled:', adminEnabled);
+  console.log('Debug - canOrder:', canOrder);
 
   useEffect(() => {
     fetchAdminStatus();
@@ -109,6 +89,7 @@ function App() {
       const response = await fetch('/api/admin-status');
       if (response.ok) {
         const data = await response.json();
+        console.log('Admin status fetched:', data);
         setAdminEnabled(data.orderingEnabled);
       }
     } catch (err) {
@@ -116,9 +97,35 @@ function App() {
     }
   };
 
+
   const handleAdminLogin = (token: string) => {
     setAdminToken(token);
-    setShowAdminPanel(true);
+    setIsLoggedIn(true);
+    setShowAdminModal(false);
+  };
+
+  const handleAdminLogout = () => {
+    setIsLoggedIn(false);
+    setAdminToken('');
+  };
+
+  const toggleStoreStatus = async () => {
+    const newStatus = !adminEnabled;
+    try {
+      const response = await fetch('/api/admin-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          orderingEnabled: newStatus, 
+          token: adminToken 
+        })
+      });
+      if (response.ok) {
+        setAdminEnabled(newStatus);
+      }
+    } catch (err) {
+      console.error('Error updating status:', err);
+    }
   };
 
   const handleAdminStatusChange = (enabled: boolean) => {
@@ -137,9 +144,13 @@ function App() {
     dispatch({ type: 'UPDATE_OBSERVATIONS', payload: { index, observations } });
   };
 
+  const clearCart = () => {
+    dispatch({ type: 'CLEAR_CART' });
+  };
+
   const getDeliveryFee = (orderType: string, neighborhood?: string): number => {
     if (orderType !== 'delivery') return 0;
-    return neighborhood && neighborhood.trim() ? 3000 : 2000;
+    return neighborhood && neighborhood.trim() ? 3000 : 2500;
   };
 
   const getTotal = (orderType: string = 'pickup', neighborhood?: string): number => {
@@ -168,11 +179,24 @@ function App() {
       message += `\n`;
     }
     
-    message += `*PEDIDO:*\n`;
+    // Generar resumen de productos
+    const productCounts: { [key: string]: number } = {};
+    cartState.items.forEach(item => {
+      const name = item.product.name;
+      productCounts[name] = (productCounts[name] || 0) + 1;
+    });
+    
+    const summaryText = Object.entries(productCounts)
+      .map(([name, count]) => `*${count}x* ${name}`)
+      .join(', ');
+    
+    message += `*RESUMEN:* ${summaryText}\n\n`;
+    
+    message += `*PEDIDO DETALLADO:*\n`;
     cartState.items.forEach((item, index) => {
       message += `${index + 1}. ${item.product.name}`;
       if (item.observations && item.observations.trim()) {
-        message += ` - ${item.observations}`;
+        message += ` - Observacion: *${item.observations}*`;
       }
       message += ` ($${item.product.price.toLocaleString()})\n`;
     });
@@ -277,10 +301,35 @@ function App() {
         </button>
       )}
       
+      {/* Panel Admin Flotante */}
+      {isLoggedIn && (
+        <div className="fixed top-4 right-4 bg-marron-oscuro rounded-lg p-4 shadow-lg z-40">
+          <div className="flex items-center gap-3">
+            <span className="text-white text-sm font-semibold">Admin</span>
+            <button
+              onClick={toggleStoreStatus}
+              className={`px-4 py-2 rounded font-semibold text-sm transition-colors ${
+                adminEnabled 
+                  ? 'bg-green-600 hover:bg-green-700 text-white' 
+                  : 'bg-rojo-intenso hover:bg-red-700 text-white'
+              }`}
+            >
+              {adminEnabled ? 'CERRAR LOCAL' : 'ABRIR LOCAL'}
+            </button>
+            <button
+              onClick={handleAdminLogout}
+              className="text-gray-400 hover:text-white text-sm"
+            >
+              Salir
+            </button>
+          </div>
+        </div>
+      )}
+      
       {/* Overlay de cerrado */}
       {!canOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
-          <div className="text-center text-white p-8">
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 pointer-events-none">
+          <div className="text-center text-white p-8 pointer-events-auto">
             <h2 className="text-4xl font-bold text-rojo-intenso mb-4">Estamos cerrados</h2>
             <p className="text-xl mb-2">{getStatusMessage()}</p>
             <p className="text-lg text-gray-300">Horarios: Jueves a Domingos - 20:30 a 23:50</p>
@@ -296,6 +345,7 @@ function App() {
         onSendWhatsApp={sendToWhatsApp}
         onRemoveItem={removeFromCart}
         onUpdateObservations={updateObservations}
+        onClearCart={clearCart}
         total={getTotal()}
         calculateTotal={getTotal}
         calculateDeliveryFee={getDeliveryFee}
