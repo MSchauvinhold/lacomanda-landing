@@ -88,6 +88,10 @@ function App() {
   const [lastOrderingTime, setLastOrderingTime] = useState(isOrderingTime());
   
   const canOrder = isOrderingTime() && adminEnabled;
+  
+  console.log('Debug - isOrderingTime():', isOrderingTime());
+  console.log('Debug - adminEnabled:', adminEnabled);
+  console.log('Debug - canOrder:', canOrder);
 
   useEffect(() => {
     fetchAdminStatus();
@@ -106,13 +110,14 @@ function App() {
     }, 10000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [lastOrderingTime]);
 
   const fetchAdminStatus = async () => {
     try {
       const response = await fetch('/api/admin-status');
       if (response.ok) {
         const data = await response.json();
+        console.log('Admin status fetched:', data);
         setAdminEnabled(data.orderingEnabled);
       }
     } catch (err) {
