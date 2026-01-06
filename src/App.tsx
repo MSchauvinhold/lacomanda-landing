@@ -62,10 +62,6 @@ const getStatusMessage = (): string => {
 };
 
 const isOrderingTime = (): boolean => {
-  // Temporalmente habilitado para demo
-  return true;
-  
-  /*
   const now = new Date();
   const day = now.getDay();
   const hour = now.getHours();
@@ -78,7 +74,6 @@ const isOrderingTime = (): boolean => {
   const isValidTime = currentTime >= startTime && currentTime <= endTime;
   
   return isValidDay && isValidTime;
-  */
 };
 
 function App() {
@@ -132,7 +127,7 @@ function App() {
 
   const getDeliveryFee = (orderType: string, neighborhood?: string): number => {
     if (orderType !== 'delivery') return 0;
-    return neighborhood && neighborhood.trim() ? 3000 : 2000;
+    return neighborhood && neighborhood.trim() ? 3000 : 2500;
   };
 
   const getTotal = (orderType: string = 'pickup', neighborhood?: string): number => {
@@ -273,7 +268,16 @@ function App() {
       {/* Overlay de cerrado */}
       {!canOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
-          <div className="text-center text-white p-8">
+          <div className="text-center text-white p-8 relative">
+            <button
+              onClick={() => setShowAdminModal(true)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors p-1"
+              title="Admin"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </button>
             <h2 className="text-4xl font-bold text-rojo-intenso mb-4">Estamos cerrados</h2>
             <p className="text-xl mb-2">{getStatusMessage()}</p>
             <p className="text-lg text-gray-300">Horarios: Jueves a Domingos - 20:30 a 23:50</p>
@@ -306,6 +310,7 @@ function App() {
         onClose={() => setShowAdminPanel(false)}
         token={adminToken}
         onStatusChange={handleAdminStatusChange}
+        currentStatus={canOrder}
       />
       
       {/* Modal Política de Privacidad */}
