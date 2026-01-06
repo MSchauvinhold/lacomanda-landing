@@ -35,10 +35,14 @@ const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onLogin }) => 
           setUsername('');
           setPassword('');
         } else {
-          setError(data.error);
+          setError(data.error || 'Error de autenticación');
         }
+      } else if (response.status === 429) {
+        const data = await response.json();
+        setError(data.error || 'Demasiados intentos. Esperá un momento.');
       } else {
-        setError('Credenciales incorrectas');
+        const data = await response.json();
+        setError(data.error || 'Credenciales incorrectas');
       }
     } catch (err) {
       setError('Error de conexión');
