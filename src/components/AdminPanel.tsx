@@ -5,10 +5,9 @@ interface AdminPanelProps {
   onClose: () => void;
   token: string;
   onStatusChange: (enabled: boolean) => void;
-  currentStatus: boolean;
 }
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, token, onStatusChange, currentStatus }) => {
+const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, token, onStatusChange }) => {
   const [orderingEnabled, setOrderingEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
 
@@ -69,8 +68,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, token, onStatu
         <div className="space-y-4">
           <div className="text-center">
             <p className="text-white mb-2">Estado del local:</p>
-            <p className={`font-bold text-lg ${currentStatus ? 'text-green-400' : 'text-rojo-intenso'}`}>
-              {currentStatus ? 'ABIERTO' : 'CERRADO'}
+            <p className={`font-bold text-lg ${orderingEnabled ? 'text-green-400' : 'text-rojo-intenso'}`}>
+              {orderingEnabled ? 'ABIERTO' : 'CERRADO'}
             </p>
           </div>
 
@@ -92,11 +91,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, token, onStatu
           </div>
 
           <p className="text-gray-400 text-xs text-center">
-            {currentStatus 
+            {orderingEnabled 
               ? 'Los pedidos están habilitados' 
-              : orderingEnabled 
-                ? 'Cerrado por horario' 
-                : 'Los pedidos están bloqueados'
+              : 'Los pedidos están bloqueados'
             }
           </p>
         </div>
