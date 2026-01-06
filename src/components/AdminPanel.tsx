@@ -10,6 +10,7 @@ interface AdminPanelProps {
 const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, token, onStatusChange }) => {
   const [orderingEnabled, setOrderingEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<string>('');
 
   useEffect(() => {
     if (isOpen) {
@@ -26,6 +27,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, token, onStatu
       }
     } catch (err) {
       console.error('Error fetching admin status:', err);
+    }
+  };
+
+  const testConnection = async () => {
+    setConnectionStatus('Probando...');
+    try {
+      const response = await fetch('/api/test-connection');
+      const data = await response.json();
+      
+      if (data.connected) {
+        setConnectionStatus('✅ Conectado');
+      } else {
+        setConnectionStatus(`❌ Error: ${data.error}`);
+      }
+    } catch (err) {
+      setConnectionStatus(`❌ Error: ${err.message}`);
     }
   };
 
@@ -96,6 +113,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, token, onStatu
               : 'Los pedidos están bloqueados'
             }
           </p>
+
+          <div className="border-t border-gray-600 pt-4">
+            <button
+              onClick={testConnection}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm"
+            >
+              Probar Conexión DB
+            </button>
+            {connectionStatus && (
+              <p className="text-xs text-center mt-2 text-gray-300">
+                {connectionStatus}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
