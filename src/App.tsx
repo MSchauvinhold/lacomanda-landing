@@ -38,27 +38,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 };
 
 const getStatusMessage = (): string => {
-  const now = new Date();
-  const day = now.getDay();
-  const hour = now.getHours();
-  const minute = now.getMinutes();
-  const currentTime = hour * 60 + minute;
-  
-  const isValidDay = day === 0 || day === 4 || day === 5 || day === 6;
-  const startTime = 20 * 60 + 30;
-  const endTime = 23 * 60 + 50;
-  
-  if (isValidDay) {
-    if (currentTime < startTime) {
-      return "Todavía estamos cerrados. Volvemos hoy a partir de las 20:30.";
-    } else if (currentTime > endTime) {
-      return "Ya cerramos por hoy. Volvemos mañana a partir de las 20:30.";
-    }
-  } else {
-    return "Estamos cerrados. Volvemos el jueves a partir de las 20:30.";
-  }
-  
-  return "";
+  return "Estamos cerrados temporalmente. Volvemos pronto.";
 };
 
 const isOrderingTime = (): boolean => {
@@ -85,9 +65,8 @@ function App() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [adminToken, setAdminToken] = useState('');
   const [adminEnabled, setAdminEnabled] = useState(true);
-  const [lastOrderingTime, setLastOrderingTime] = useState(isOrderingTime());
   
-  const canOrder = isOrderingTime() && adminEnabled;
+  const canOrder = adminEnabled;
   
   console.log('Debug - isOrderingTime():', isOrderingTime());
   console.log('Debug - adminEnabled:', adminEnabled);
@@ -99,18 +78,10 @@ function App() {
     // Polling cada 10 segundos
     const interval = setInterval(() => {
       fetchAdminStatus();
-      
-      // Reset automático cuando cambia a horario de apertura
-      const currentOrderingTime = isOrderingTime();
-      if (currentOrderingTime && !lastOrderingTime) {
-        // Cambió de cerrado a abierto automáticamente - resetear admin
-        resetAdminStatus();
-      }
-      setLastOrderingTime(currentOrderingTime);
     }, 10000);
     
     return () => clearInterval(interval);
-  }, [lastOrderingTime]);
+  }, []);
 
   const fetchAdminStatus = async () => {
     try {
@@ -125,23 +96,6 @@ function App() {
     }
   };
 
-  const resetAdminStatus = async () => {
-    try {
-      const response = await fetch('/api/admin-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          orderingEnabled: true, 
-          token: 'admin-authenticated' 
-        })
-      });
-      if (response.ok) {
-        setAdminEnabled(true);
-      }
-    } catch (err) {
-      console.error('Error resetting admin status:', err);
-    }
-  };
 
   const handleAdminLogin = (token: string) => {
     setAdminToken(token);
