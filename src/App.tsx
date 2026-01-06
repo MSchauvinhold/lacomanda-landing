@@ -64,7 +64,7 @@ function App() {
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [adminToken, setAdminToken] = useState('');
-  const [adminEnabled, setAdminEnabled] = useState(true);
+  const [adminEnabled, setAdminEnabled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   const canOrder = adminEnabled;
