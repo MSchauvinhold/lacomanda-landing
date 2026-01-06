@@ -85,18 +85,9 @@ function App() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [adminToken, setAdminToken] = useState('');
   const [adminEnabled, setAdminEnabled] = useState(true);
-  const [manualOverride, setManualOverride] = useState(false);
+  const [lastOrderingTime, setLastOrderingTime] = useState(isOrderingTime());
   
-  const isAfterClosingTime = (): boolean => {
-    const now = new Date();
-    const hour = now.getHours();
-    const minute = now.getMinutes();
-    const currentTime = hour * 60 + minute;
-    return currentTime > (23 * 60 + 50);
-  };
-
-  const isAutoOpen = isOrderingTime();
-  const canOrder = adminEnabled && (isAutoOpen || manualOverride) && !isAfterClosingTime();
+  const canOrder = isOrderingTime() && adminEnabled;
 
   useEffect(() => {
     fetchAdminStatus();
@@ -105,11 +96,13 @@ function App() {
     const interval = setInterval(() => {
       fetchAdminStatus();
       
-      // Reset manual override cuando cambia el estado automático
-      const currentAutoOpen = isOrderingTime();
-      if (currentAutoOpen !== isAutoOpen) {
-        setManualOverride(false);
+      // Reset automático cuando cambia a horario de apertura
+      const currentOrderingTime = isOrderingTime();
+      if (currentOrderingTime && !lastOrderingTime) {
+        // Cambió de cerrado a abierto automáticamente - resetear admin
+        resetAdminStatus();
       }
+      setLastOrderingTime(currentOrderingTime);
     }, 10000);
     
     return () => clearInterval(interval);
@@ -127,6 +120,24 @@ function App() {
     }
   };
 
+  const resetAdminStatus = async () => {
+    try {
+      const response = await fetch('/api/admin-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          orderingEnabled: true, 
+          token: 'admin-authenticated' 
+        })
+      });
+      if (response.ok) {
+        setAdminEnabled(true);
+      }
+    } catch (err) {
+      console.error('Error resetting admin status:', err);
+    }
+  };
+
   const handleAdminLogin = (token: string) => {
     setAdminToken(token);
     setShowAdminPanel(true);
@@ -134,14 +145,6 @@ function App() {
 
   const handleAdminStatusChange = (enabled: boolean) => {
     setAdminEnabled(enabled);
-    
-    // Si está fuera de horario automático, activar override manual
-    if (!isAutoOpen) {
-      setManualOverride(enabled);
-    } else {
-      // Si está en horario automático, el override es para cerrar manualmente
-      setManualOverride(!enabled);
-    }
   };
 
   const addToCart = (product: Product) => {
