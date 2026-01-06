@@ -179,7 +179,20 @@ function App() {
       message += `\n`;
     }
     
-    message += `*PEDIDO:*\n`;
+    // Generar resumen de productos
+    const productCounts: { [key: string]: number } = {};
+    cartState.items.forEach(item => {
+      const name = item.product.name;
+      productCounts[name] = (productCounts[name] || 0) + 1;
+    });
+    
+    const summaryText = Object.entries(productCounts)
+      .map(([name, count]) => `*${count}x* ${name}`)
+      .join(', ');
+    
+    message += `*RESUMEN:* ${summaryText}\n\n`;
+    
+    message += `*PEDIDO DETALLADO:*\n`;
     cartState.items.forEach((item, index) => {
       message += `${index + 1}. ${item.product.name}`;
       if (item.observations && item.observations.trim()) {
