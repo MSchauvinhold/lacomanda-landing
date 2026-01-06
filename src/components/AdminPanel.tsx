@@ -41,7 +41,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, token, onStatu
       } else {
         setConnectionStatus(`❌ Error: ${data.error}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       setConnectionStatus(`❌ Error: ${err.message}`);
     }
   };
