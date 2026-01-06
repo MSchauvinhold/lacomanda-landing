@@ -144,6 +144,10 @@ function App() {
     dispatch({ type: 'UPDATE_OBSERVATIONS', payload: { index, observations } });
   };
 
+  const clearCart = () => {
+    dispatch({ type: 'CLEAR_CART' });
+  };
+
   const getDeliveryFee = (orderType: string, neighborhood?: string): number => {
     if (orderType !== 'delivery') return 0;
     return neighborhood && neighborhood.trim() ? 3000 : 2500;
@@ -179,7 +183,7 @@ function App() {
     cartState.items.forEach((item, index) => {
       message += `${index + 1}. ${item.product.name}`;
       if (item.observations && item.observations.trim()) {
-        message += ` - ${item.observations}`;
+        message += ` - Observacion: *${item.observations}*`;
       }
       message += ` ($${item.product.price.toLocaleString()})\n`;
     });
@@ -328,6 +332,7 @@ function App() {
         onSendWhatsApp={sendToWhatsApp}
         onRemoveItem={removeFromCart}
         onUpdateObservations={updateObservations}
+        onClearCart={clearCart}
         total={getTotal()}
         calculateTotal={getTotal}
         calculateDeliveryFee={getDeliveryFee}

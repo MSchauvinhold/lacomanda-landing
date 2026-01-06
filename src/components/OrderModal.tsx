@@ -8,12 +8,13 @@ interface OrderModalProps {
   onSendWhatsApp: (customerData: CustomerData) => void;
   onRemoveItem: (index: number) => void;
   onUpdateObservations: (index: number, observations: string) => void;
+  onClearCart: () => void;
   total: number;
   calculateTotal: (orderType?: string, neighborhood?: string) => number;
   calculateDeliveryFee: (orderType: string, neighborhood?: string) => number;
 }
 
-const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, cartItems, onSendWhatsApp, onRemoveItem, onUpdateObservations, calculateTotal, calculateDeliveryFee }) => {
+const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, cartItems, onSendWhatsApp, onRemoveItem, onUpdateObservations, onClearCart, calculateTotal, calculateDeliveryFee }) => {
   const [customerData, setCustomerData] = useState<CustomerData>({
     name: '',
     phone: '',
@@ -72,7 +73,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, cartItems, onS
           </div>
           
           <p className="text-gray-300 text-sm mb-4">
-            Hacé clic en “Agregar observación” para realizar cambios o aclaraciones sobre este producto.
+            Toca “Agregar observación” para realizar cambios o aclaraciones sobre un producto.
           </p>
 
           {/* Resumen del pedido */}
@@ -83,6 +84,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, cartItems, onS
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex-1">
                       <h4 className="text-white font-semibold">{index + 1}. {item.product.name}</h4>
+                      <p className="text-gray-300 text-xs mt-1">({item.product.description})</p>
                       <p className="text-naranja-calido font-bold">${item.product.price.toLocaleString()}</p>
                     </div>
                     <button
@@ -145,6 +147,21 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, cartItems, onS
                 </div>
               ))}
             </div>
+            
+            {cartItems.length > 1 && (
+              <div className="flex justify-end mb-2">
+                <button
+                  onClick={() => {
+                    if (confirm('¿Estás seguro que querés vaciar todo el carrito?')) {
+                      onClearCart();
+                    }
+                  }}
+                  className="text-gray-400 hover:text-red-400 text-xs underline transition-colors"
+                >
+                  Vaciar carrito
+                </button>
+              </div>
+            )}
             
             <div className="bg-rojo-intenso rounded p-3">
               <div className="text-white text-center space-y-1">
@@ -210,7 +227,6 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, cartItems, onS
                 <option value="">Seleccionar método</option>
                 <option value="efectivo">Efectivo</option>
                 <option value="transferencia">Transferencia</option>
-                <option value="tarjeta">Tarjeta</option>
               </select>
             </div>
 
