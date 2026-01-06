@@ -65,6 +65,7 @@ function App() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [adminToken, setAdminToken] = useState('');
   const [adminEnabled, setAdminEnabled] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   const canOrder = adminEnabled;
   
@@ -99,7 +100,32 @@ function App() {
 
   const handleAdminLogin = (token: string) => {
     setAdminToken(token);
-    setShowAdminPanel(true);
+    setIsLoggedIn(true);
+    setShowAdminModal(false);
+  };
+
+  const handleAdminLogout = () => {
+    setIsLoggedIn(false);
+    setAdminToken('');
+  };
+
+  const toggleStoreStatus = async () => {
+    const newStatus = !adminEnabled;
+    try {
+      const response = await fetch('/api/admin-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          orderingEnabled: newStatus, 
+          token: adminToken 
+        })
+      });
+      if (response.ok) {
+        setAdminEnabled(newStatus);
+      }
+    } catch (err) {
+      console.error('Error updating status:', err);
+    }
   };
 
   const handleAdminStatusChange = (enabled: boolean) => {
@@ -256,6 +282,31 @@ function App() {
             </span>
           </div>
         </button>
+      )}
+      
+      {/* Panel Admin Flotante */}
+      {isLoggedIn && (
+        <div className="fixed top-4 right-4 bg-marron-oscuro rounded-lg p-4 shadow-lg z-40">
+          <div className="flex items-center gap-3">
+            <span className="text-white text-sm font-semibold">Admin</span>
+            <button
+              onClick={toggleStoreStatus}
+              className={`px-4 py-2 rounded font-semibold text-sm transition-colors ${
+                adminEnabled 
+                  ? 'bg-green-600 hover:bg-green-700 text-white' 
+                  : 'bg-rojo-intenso hover:bg-red-700 text-white'
+              }`}
+            >
+              {adminEnabled ? 'CERRAR LOCAL' : 'ABRIR LOCAL'}
+            </button>
+            <button
+              onClick={handleAdminLogout}
+              className="text-gray-400 hover:text-white text-sm"
+            >
+              Salir
+            </button>
+          </div>
+        </div>
       )}
       
       {/* Overlay de cerrado */}

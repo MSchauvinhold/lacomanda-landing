@@ -70,6 +70,10 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, cartItems, onS
               ✕
             </button>
           </div>
+          
+          <p className="text-gray-300 text-sm mb-4">
+            Hacé clic en “Agregar observación” para realizar cambios o aclaraciones sobre este producto.
+          </p>
 
           {/* Resumen del pedido */}
           <div className="mb-6">
@@ -94,7 +98,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, cartItems, onS
                       <textarea
                         value={tempObservations}
                         onChange={(e) => setTempObservations(e.target.value)}
-                        placeholder="Especificaciones del producto..."
+                        placeholder="Ej: sin condimentos, con condimentos (especificar cuales), sin cebolla, etc."
                         className="w-full p-2 text-sm rounded bg-marron-oscuro text-white placeholder-gray-400 resize-none"
                         rows={2}
                       />
