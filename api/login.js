@@ -6,8 +6,8 @@ export default function handler(req, res) {
   const { username, password } = req.body;
   
   // Credenciales hardcodeadas (cambiar en producción)
-  const ADMIN_USER = 'admin';
-  const ADMIN_PASS = 'lacomanda2024';
+  const ADMIN_USER = 'adminlacomanda';
+  const ADMIN_PASS = 'Lacomanda@2026';
   
   if (username === ADMIN_USER && password === ADMIN_PASS) {
     return res.status(200).json({ 

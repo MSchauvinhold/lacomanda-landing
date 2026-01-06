@@ -85,8 +85,18 @@ function App() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [adminToken, setAdminToken] = useState('');
   const [adminEnabled, setAdminEnabled] = useState(true);
+  const [manualOverride, setManualOverride] = useState(false);
   
-  const canOrder = isOrderingTime() && adminEnabled;
+  const isAfterClosingTime = (): boolean => {
+    const now = new Date();
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+    const currentTime = hour * 60 + minute;
+    return currentTime > (23 * 60 + 50);
+  };
+
+  const isAutoOpen = isOrderingTime();
+  const canOrder = adminEnabled && (isAutoOpen || manualOverride) && !isAfterClosingTime();
 
   useEffect(() => {
     fetchAdminStatus();
@@ -94,6 +104,12 @@ function App() {
     // Polling cada 10 segundos
     const interval = setInterval(() => {
       fetchAdminStatus();
+      
+      // Reset manual override cuando cambia el estado automático
+      const currentAutoOpen = isOrderingTime();
+      if (currentAutoOpen !== isAutoOpen) {
+        setManualOverride(false);
+      }
     }, 10000);
     
     return () => clearInterval(interval);
@@ -118,6 +134,14 @@ function App() {
 
   const handleAdminStatusChange = (enabled: boolean) => {
     setAdminEnabled(enabled);
+    
+    // Si está fuera de horario automático, activar override manual
+    if (!isAutoOpen) {
+      setManualOverride(enabled);
+    } else {
+      // Si está en horario automático, el override es para cerrar manualmente
+      setManualOverride(!enabled);
+    }
   };
 
   const addToCart = (product: Product) => {
@@ -274,8 +298,8 @@ function App() {
       
       {/* Overlay de cerrado */}
       {!canOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
-          <div className="text-center text-white p-8">
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 pointer-events-none">
+          <div className="text-center text-white p-8 pointer-events-auto">
             <h2 className="text-4xl font-bold text-rojo-intenso mb-4">Estamos cerrados</h2>
             <p className="text-xl mb-2">{getStatusMessage()}</p>
             <p className="text-lg text-gray-300">Horarios: Jueves a Domingos - 20:30 a 23:50</p>
