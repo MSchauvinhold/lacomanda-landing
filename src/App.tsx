@@ -64,10 +64,10 @@ function App() {
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [adminToken, setAdminToken] = useState('');
-  const [adminEnabled, setAdminEnabled] = useState(false);
+  const [adminEnabled, setAdminEnabled] = useState<boolean | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   
-  const canOrder = adminEnabled;
+  const canOrder = adminEnabled === true;
   
   console.log('Debug - isOrderingTime():', isOrderingTime());
   console.log('Debug - adminEnabled:', adminEnabled);
@@ -128,7 +128,7 @@ function App() {
     }
   };
 
-  const handleAdminStatusChange = (enabled: boolean) => {
+  const handleAdminStatusChange = (enabled: boolean | null) => {
     setAdminEnabled(enabled);
   };
 
@@ -326,8 +326,19 @@ function App() {
         </div>
       )}
       
+      {/* Overlay de cargando */}
+      {adminEnabled === null && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 pointer-events-none">
+          <div className="text-center text-white p-8 pointer-events-auto">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-naranja-calido mx-auto mb-4"></div>
+            <h2 className="text-2xl font-bold text-white mb-2">Cargando...</h2>
+            <p className="text-gray-300">Un momento por favor</p>
+          </div>
+        </div>
+      )}
+      
       {/* Overlay de cerrado */}
-      {!canOrder && (
+      {adminEnabled === false && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 pointer-events-none">
           <div className="text-center text-white p-8 pointer-events-auto">
             <h2 className="text-4xl font-bold text-rojo-intenso mb-4">Cerrado</h2>
