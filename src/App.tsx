@@ -330,7 +330,7 @@ function App() {
       {!canOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 pointer-events-none">
           <div className="text-center text-white p-8 pointer-events-auto">
-            <h2 className="text-4xl font-bold text-rojo-intenso mb-4">Estamos cerrados</h2>
+            <h2 className="text-4xl font-bold text-rojo-intenso mb-4">Cerrado</h2>
             <p className="text-xl mb-2">{getStatusMessage()}</p>
             <p className="text-lg text-gray-300">Horarios: Jueves a Domingos - 20:30 a 23:50</p>
           </div>
