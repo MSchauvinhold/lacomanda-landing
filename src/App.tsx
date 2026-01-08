@@ -165,7 +165,7 @@ function App() {
     message += `*Cliente:* ${customerData.name}\n`;
     message += `*Telefono:* ${customerData.phone}\n`;
     message += `*Pago:* ${customerData.paymentMethod}\n`;
-    message += `*Tipo:* ${customerData.orderType === 'pickup' ? 'Retiro en local' : 'Envio a domicilio'}\n\n`;
+    message += `*Tipo:* ${customerData.orderType === 'pickup' ? 'Retiro en local' : 'Envio a domicilio'}\n`;
     
     if (customerData.orderType === 'delivery' && customerData.address) {
       message += `*Direccion:*\n`;
@@ -176,41 +176,61 @@ function App() {
       if (customerData.address.neighborhood) {
         message += `Barrio: ${customerData.address.neighborhood}\n`;
       }
-      message += `\n`;
     }
     
-    // Generar resumen de productos
-    const productCounts: { [key: string]: number } = {};
+    message += `\n-------------------------\n\n`;
+    
+    // Generar resumen de productos con precios
+    const productCounts: { [key: string]: { count: number, price: number } } = {};
     cartState.items.forEach(item => {
       const name = item.product.name;
-      productCounts[name] = (productCounts[name] || 0) + 1;
+      if (!productCounts[name]) {
+        productCounts[name] = { count: 0, price: item.product.price };
+      }
+      productCounts[name].count += 1;
     });
     
     const summaryText = Object.entries(productCounts)
-      .map(([name, count]) => `*${count}x* ${name}`)
-      .join(', ');
+      .map(([name, data]) => `*${data.count}x* ${name} - $${data.price.toLocaleString()}`)
+      .join('\n');
     
-    message += `*RESUMEN:* ${summaryText}\n\n`;
+    const totalItems = cartState.items.length;
+    
+    message += `*RESUMEN*\n${summaryText}\nTotal ítems: ${totalItems}\n\n`;
+    
+    message += `-------------------------\n\n`;
     
     message += `*PEDIDO DETALLADO:*\n`;
     cartState.items.forEach((item, index) => {
-      message += `${index + 1}. ${item.product.name}`;
+      message += `\n${index + 1}. *${item.product.name}*`;
       if (item.observations && item.observations.trim()) {
-        message += ` - Observacion: *${item.observations}*`;
+        // Separar observaciones por comas y crear bullets
+        const observationsList = item.observations.split(',').map(obs => obs.trim()).filter(obs => obs.length > 0);
+        observationsList.forEach(obs => {
+          message += `\n- ${obs}`;
+        });
       }
-      message += ` ($${item.product.price.toLocaleString()})\n`;
+      message += `\n`;
     });
     
+    message += `\n-------------------------\n\n`;
+    
+    const subtotal = cartState.items.reduce((total, item) => total + item.product.price, 0);
     const deliveryFee = getDeliveryFee(customerData.orderType, customerData.address?.neighborhood);
-    if (deliveryFee > 0) {
-      message += `\nEnvio: $${deliveryFee.toLocaleString()}\n`;
+    const total = subtotal + deliveryFee;
+    
+    if (customerData.orderType === 'delivery') {
+      message += `*TOTALES*\n`;
+      message += `Subtotal: $${subtotal.toLocaleString()}\n`;
+      message += `Envio: $${deliveryFee.toLocaleString()}\n`;
+      message += `*Total: $${total.toLocaleString()}*\n`;
+    } else {
+      message += `*Total: $${total.toLocaleString()}*\n`;
     }
     
-    const total = getTotal(customerData.orderType, customerData.address?.neighborhood);
-    message += `\n*Total: $${total.toLocaleString()}*\n`;
-    
     if (customerData.generalObservations) {
-      message += `\n*Observaciones:* ${customerData.generalObservations}`;
+      message += `\n-------------------------\n\n`;
+      message += `*Observaciones:* ${customerData.generalObservations}`;
     }
     
     return encodeURIComponent(message);
@@ -218,7 +238,7 @@ function App() {
 
   const sendToWhatsApp = (customerData: CustomerData) => {
     const message = buildWhatsAppMessage(customerData);
-    const whatsappNumber = '5493772300876';
+    const whatsappNumber = '5493772406996';
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
     
     window.open(whatsappUrl, '_blank');
@@ -341,7 +361,7 @@ function App() {
       {adminEnabled === false && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 pointer-events-none">
           <div className="text-center text-white p-8 pointer-events-auto">
-            <h2 className="text-4xl font-bold text-rojo-intenso mb-4">Cerrado</h2>
+            <h2 className="text-4xl font-bold text-rojo-intenso mb-4">Estamos cerrados</h2>
             <p className="text-xl mb-2">{getStatusMessage()}</p>
             <p className="text-lg text-gray-300">Horarios: Jueves a Domingos - 20:30 a 23:50</p>
           </div>

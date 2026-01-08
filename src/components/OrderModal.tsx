@@ -100,7 +100,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, cartItems, onS
                       <textarea
                         value={tempObservations}
                         onChange={(e) => setTempObservations(e.target.value)}
-                        placeholder="Ej: sin condimentos, con condimentos (especificar cuales), sin cebolla, etc."
+                        placeholder="Ej: sin condimentos, con mayonesa, sin cebolla"
                         className="w-full p-2 text-sm rounded bg-marron-oscuro text-white placeholder-gray-400 resize-none"
                         rows={2}
                       />
