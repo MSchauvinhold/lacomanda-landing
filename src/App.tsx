@@ -8,7 +8,7 @@ import Footer from './components/Footer';
 import PrintTicket from './pages/PrintTicket';
 import { products } from './data/products';
 import { CartState, CartAction, Product, CustomerData } from './types';
-import { generatePrintUrl, PrintData } from './utils/printUtils';
+import { PrintData } from './utils/printUtils';
 import { generateShortPrintUrl } from './utils/urlShortener';
 
 // Carrito
@@ -76,39 +76,38 @@ function App() {
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [adminToken, setAdminToken] = useState('');
-  // const [adminEnabled, setAdminEnabled] = useState<boolean | null>(null);
-  const [adminEnabled, setAdminEnabled] = useState<boolean | null>(true); // Forzado para testing
+  const [adminEnabled, setAdminEnabled] = useState<boolean | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   
-  const canOrder = true; // Forzado para testing
+  const canOrder = adminEnabled === true;
   
   console.log('Debug - isOrderingTime():', isOrderingTime());
   console.log('Debug - adminEnabled:', adminEnabled);
   console.log('Debug - canOrder:', canOrder);
 
-  // useEffect(() => {
-  //   fetchAdminStatus();
+  useEffect(() => {
+    fetchAdminStatus();
     
-  //   // Polling cada 10 segundos
-  //   const interval = setInterval(() => {
-  //     fetchAdminStatus();
-  //   }, 10000);
+    // Polling cada 10 segundos
+    const interval = setInterval(() => {
+      fetchAdminStatus();
+    }, 10000);
     
-  //   return () => clearInterval(interval);
-  // }, []);
+    return () => clearInterval(interval);
+  }, []);
 
-  // const fetchAdminStatus = async () => {
-  //   try {
-  //     const response = await fetch('/api/admin-status');
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       console.log('Admin status fetched:', data);
-  //       setAdminEnabled(data.orderingEnabled);
-  //     }
-  //   } catch (err) {
-  //     console.error('Error fetching admin status:', err);
-  //   }
-  // };
+  const fetchAdminStatus = async () => {
+    try {
+      const response = await fetch('/api/admin-status');
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Admin status fetched:', data);
+        setAdminEnabled(data.orderingEnabled);
+      }
+    } catch (err) {
+      console.error('Error fetching admin status:', err);
+    }
+  };
 
 
   const handleAdminLogin = (token: string) => {
@@ -374,8 +373,8 @@ function App() {
         </div>
       )}
       
-      {/* Overlay de cargando - COMENTADO PARA TESTING */}
-      {/* {adminEnabled === null && (
+      {/* Overlay de cargando */}
+      {adminEnabled === null && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 pointer-events-none">
           <div className="text-center text-white p-8 pointer-events-auto">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-naranja-calido mx-auto mb-4"></div>
@@ -383,10 +382,10 @@ function App() {
             <p className="text-gray-300">Un momento por favor</p>
           </div>
         </div>
-      )} */}
+      )}
       
-      {/* Overlay de cerrado - COMENTADO PARA TESTING */}
-      {/* {adminEnabled === false && (
+      {/* Overlay de cerrado */}
+      {adminEnabled === false && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 pointer-events-none">
           <div className="text-center text-white p-8 pointer-events-auto">
             <h2 className="text-4xl font-bold text-rojo-intenso mb-4">Estamos cerrados</h2>
@@ -394,7 +393,7 @@ function App() {
             <p className="text-lg text-gray-300">Horarios: Jueves a Domingos - 20:30 a 23:50</p>
           </div>
         </div>
-      )} */}
+      )}
       
       {/* Modal de pedido */}
       <OrderModal

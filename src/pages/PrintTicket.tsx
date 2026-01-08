@@ -149,7 +149,7 @@ const PrintTicket: React.FC = () => {
         )}
       </div>
 
-      <style jsx>{`
+      <style>{`
         .ticket-container {
           display: flex;
           justify-content: center;
