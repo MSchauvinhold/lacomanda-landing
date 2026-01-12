@@ -150,7 +150,7 @@ function App() {
 
   const getDeliveryFee = (orderType: string, neighborhood?: string): number => {
     if (orderType !== 'delivery') return 0;
-    return neighborhood && neighborhood.trim() ? 3000 : 2500;
+    return neighborhood && neighborhood.trim() ? 3500 : 3000;
   };
 
   const getTotal = (orderType: string = 'pickup', neighborhood?: string): number => {

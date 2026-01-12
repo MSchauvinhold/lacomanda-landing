@@ -254,7 +254,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, cartItems, onS
                     onChange={(e) => setCustomerData({...customerData, orderType: e.target.value as 'pickup' | 'delivery'})}
                     className="mr-2"
                   />
-                  <span className="text-white">Envío a domicilio</span>
+                  <span className="text-white">Envío a domicilio (días de lluvia +$1000)</span>
                 </label>
               </div>
             </div>
