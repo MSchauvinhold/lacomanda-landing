@@ -233,6 +233,9 @@ function App() {
       message += `*Observaciones:* ${customerData.generalObservations}`;
     }
     
+    message += `\n\n⚠️ *PEDIDO SUJETO A CONFIRMACIÓN* ⚠️`;
+    message += `\nPor favor espere nuestra confirmacion.`;
+    
     return encodeURIComponent(message);
   };
 
