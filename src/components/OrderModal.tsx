@@ -254,7 +254,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, cartItems, onS
                     onChange={(e) => setCustomerData({...customerData, orderType: e.target.value as 'pickup' | 'delivery'})}
                     className="mr-2"
                   />
-                  <span className="text-white">Envío a domicilio (días de lluvia +$1000)</span>
+                  <span className="text-white">Envío a domicilio</span>
                 </label>
               </div>
             </div>
@@ -263,6 +263,12 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, cartItems, onS
             {customerData.orderType === 'delivery' && (
               <div className="space-y-3 border-t border-gray-600 pt-4">
                 <h3 className="text-white font-semibold">Dirección de entrega</h3>
+                
+                <div className="bg-yellow-900 bg-opacity-50 border border-yellow-600 rounded p-3 mb-3">
+                  <p className="text-yellow-200 text-sm">
+                    ℹ️ <strong>Información:</strong> En días de lluvia se aplica un recargo de +$1000 al envío.
+                  </p>
+                </div>
                 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
