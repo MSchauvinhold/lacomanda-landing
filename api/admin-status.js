@@ -59,13 +59,15 @@ export default async function handler(req, res) {
       
       if (error) {
         console.error('Error reading from Supabase:', error);
-        return res.status(500).json({ error: 'Error de base de datos' });
+        // Retornar true por defecto si hay error
+        return res.status(200).json({ orderingEnabled: true });
       }
       
       return res.status(200).json({ orderingEnabled: data.orders_enabled });
     } catch (err) {
       console.error('Supabase error:', err);
-      return res.status(500).json({ error: 'Error de conexión' });
+      // Retornar true por defecto si hay error de conexión
+      return res.status(200).json({ orderingEnabled: true });
     }
   }
   

@@ -241,7 +241,7 @@ function App() {
 
   const sendToWhatsApp = (customerData: CustomerData) => {
     const message = buildWhatsAppMessage(customerData);
-    const whatsappNumber = '5493772300876';
+    const whatsappNumber = '5491112345678'; // Número genérico de prueba
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
     
     window.open(whatsappUrl, '_blank');
